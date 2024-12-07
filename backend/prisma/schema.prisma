@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// customer and agentcy table
+model users {
+  id                  Int                  @id @default(autoincrement())
+  username            String?              @unique
+  prefixName          Int?
+  firstName           String?
+  lastName            String?
+  email               String               @unique
+  emailCodeVerify     String?
+  emailcodeDT         DateTime?
+  password            String?
+  passwordToken       String?
+  phoneNumber         String?
+  picture             String?
+  role                Int?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  accounts            accounts[]           @relation("userAccount")
+  userRole            roles?               @relation("userRole", fields: [role], references: [id])
+  ToPrefix            prefixName?          @relation("ToPrefix", fields: [prefixName], references: [id])
+}
+
+
+model accounts {
+  id                 String     @id @default(cuid())
+  userId             Int?
+  customerId         Int?
+  providerType       String
+  providerId         String
+  providerAccountId  String
+  refreshToken       String?
+  accessToken        String?
+  accessTokenExpires DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  user               users?  @relation("userAccount", fields: [userId], references: [id])
+
+  @@unique([providerId, providerAccountId])
+}
+
+model roles {
+  id          Int        @id @default(autoincrement())
+  nameEng     String?
+  nameTH      String?
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        users[]    @relation("userRole")
+}
+
+model prefixName {
+  id          Int        @id @default(autoincrement())
+  prefixEng     String?
+  prefixTH      String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  users        users[]   @relation("ToPrefix")
+}
